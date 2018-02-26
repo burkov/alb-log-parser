@@ -9,10 +9,11 @@ buildscript {
     }
 }
 
-group 'com.jetbrains.intdev'
+group 'com.github.burkov'
 version '1.0'
 
 apply plugin: 'kotlin'
+apply plugin: 'maven'
 
 repositories {
     mavenCentral()

@@ -1,13 +1,11 @@
-package com.github.burkov.albLogParser
+package com.github.burkov.jbaStats.utils
 
 import com.google.common.net.HostAndPort
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URL
 import java.time.ZonedDateTime
 
 // http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html
-
 data class ALBRequest(
         val method: String,
         val rawUrl: String,
@@ -34,17 +32,16 @@ data class ALBLogEntry(
         val sslProtocol: String,
         val targetGroupArn: String,
         val traceId: String,
-        val domainName: String,
-        val chosenCertArn: String
+        val domainName: String?, // nullable for backward comp
+        val chosenCertArn: String?  // nullable for backward comp
 )
 
 object ALBLogParser {
-    private val logger = LoggerFactory.getLogger(ALBLogParser.javaClass.name)
     private fun String.parseALBLogEntry(): ALBLogEntry? {
         var i = 0
         fun dropWs() {
             require(i < this.length)
-            while (this[i].isWhitespace()) i++
+            while (i < this.length && this[i].isWhitespace()) i++
         }
 
         fun forwardTo(c: Char = '"') {
@@ -61,7 +58,8 @@ object ALBLogParser {
             return r
         }
 
-        fun String.nextQuoted(): String {
+        fun String.nextQuoted(optional: Boolean = false): String {
+            if(i >= this.length && optional) return "-"
             forwardTo()
             val r = this.next('"')
             if (i < this.length)
@@ -89,11 +87,12 @@ object ALBLogParser {
                     sslProtocol = next(),
                     targetGroupArn = next(),
                     traceId = nextQuoted(),
-                    domainName = nextQuoted(),
-                    chosenCertArn = nextQuoted()
+                    domainName = nextQuoted(true),
+                    chosenCertArn = nextQuoted(true)
             )
         } catch (e: Exception) {
-            logger.warn("failed to parse log line, exception: $e\nentry: $this")
+            e.printStackTrace()
+            println("failed to parse log line, exception: $e\nentry: $this")
             null
         }
     }
