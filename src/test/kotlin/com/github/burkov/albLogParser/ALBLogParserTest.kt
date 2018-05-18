@@ -1,5 +1,6 @@
 package com.github.burkov.albLogParser
 
+import com.github.burkov.jbaStats.utils.*
 import com.google.common.net.HostAndPort
 import org.junit.Assert.*
 import org.junit.Test
@@ -33,6 +34,7 @@ class ALBLogParserTest {
             assertEquals(chosenCertArn, "arn:aws:acm:eu-west-1:917192913078:certificate/22d6d81e-1234-4321-3333-c1111f17599d")
         }
     }
+
     @Test
     fun badInputTest() {
         assertNull(ALBLogParser.fromString(""))
